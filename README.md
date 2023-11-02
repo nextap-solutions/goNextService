@@ -46,7 +46,7 @@ stateDiagram-v2
         is_c_running_state --> Closing: Error
         Closing --> Done: Component.Close()
     }
-    AS --> AR
+    AS --> AR: All components has started
     AR --> is_a_running_state
     is_a_running_state --> AR
     is_a_running_state --> Closing: Signal to shutdown
