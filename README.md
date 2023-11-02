@@ -52,3 +52,12 @@ stateDiagram-v2
     is_a_running_state --> Closing: Signal to shutdown
     Done --> [*]
 ```
+
+### TODO
+
+- [ ] Test
+- [ ] Replace zap with configurable logger
+- [ ] Move hardcoded strings into config
+- [ ] Document metricz and healthz components
+- [ ] Document how to create new components
+- [ ] Better documentation
