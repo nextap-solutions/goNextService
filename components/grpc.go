@@ -15,11 +15,6 @@ type GrpcComponent struct {
 	exitChan chan (bool)
 }
 
-// func NewGrpcComponent[t any](registerFunc func(grpc.ServiceRegistrar, t), srv t) *GrpcComponent {
-// 	component := GrpcComponent{
-// 		exitChan: make(chan bool),
-// }
-
 func NewGrpcComponent(server *grpc.Server, lis net.Listener) *GrpcComponent {
 	component := GrpcComponent{
 		grocServer: server,
