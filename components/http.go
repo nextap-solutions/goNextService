@@ -66,10 +66,12 @@ func (hc *HttpComponent) Startup() error {
 
 func (hc *HttpComponent) Run() error {
 	handler := hc.handler
-	if !hc.serverConfig.Enabled {
-		select {
-		case _ = <-hc.exitChan:
-			return nil
+	if hc.serverConfig != nil {
+		if !hc.serverConfig.Enabled {
+			select {
+			case _ = <-hc.exitChan:
+				return nil
+			}
 		}
 	}
 
