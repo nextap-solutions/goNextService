@@ -73,15 +73,14 @@ func (hc *HttpComponent) Run() error {
 				return nil
 			}
 		}
-	}
-
-	if hc.serverConfig != nil && hc.serverConfig.Cors != nil {
-		corsMiddleware := cors.New(cors.Options{
-			AllowedOrigins:   hc.serverConfig.Cors.AllowedOrigins,
-			AllowCredentials: hc.serverConfig.Cors.AllowCredentials,
-			AllowedHeaders:   hc.serverConfig.Cors.AllowedHeaders,
-		})
-		handler = corsMiddleware.Handler(hc.handler)
+		if hc.serverConfig.Cors != nil {
+			corsMiddleware := cors.New(cors.Options{
+				AllowedOrigins:   hc.serverConfig.Cors.AllowedOrigins,
+				AllowCredentials: hc.serverConfig.Cors.AllowCredentials,
+				AllowedHeaders:   hc.serverConfig.Cors.AllowedHeaders,
+			})
+			handler = corsMiddleware.Handler(hc.handler)
+		}
 	}
 
 	api, err := hc.resolveServer()
