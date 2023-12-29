@@ -95,20 +95,18 @@ func (hc *HttpComponent) Run() error {
 }
 
 func (hc *HttpComponent) Close(ctx context.Context) error {
-	if !hc.serverConfig.Enabled {
+	if hc.serverConfig != nil && !hc.serverConfig.Enabled {
 		hc.exitChan <- true
 		close(hc.exitChan)
 		return nil
 	}
-	if hc.runningServer == nil {
-		return nil
+	if hc.runningServer != nil {
+		err := hc.runningServer.Shutdown(ctx)
+		if err != nil {
+			return err
+		}
+		hc.runningServer = nil
 	}
-	err := hc.runningServer.Shutdown(ctx)
-	if err != nil {
-		return err
-	}
-
-	hc.runningServer = nil
 	return nil
 }
 
@@ -127,5 +125,5 @@ func (hc *HttpComponent) resolveServer() (*http.Server, error) {
 		return hc.httpServer, nil
 	}
 
-	return nil, errors.New("Cannot one of httpServer or serverConfig")
+	return nil, errors.New("Either httpServer or serverConfig must be provided")
 }
