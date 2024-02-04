@@ -9,7 +9,7 @@ type MetricszConfig struct {
 	Enabled      bool
 }
 
-var defaultMetricszConfig = MetricszConfig{
+var DefaultMetricszConfig = MetricszConfig{
 	Port:         "60004",
 	ReadTimeout:  5 * time.Second,
 	WriteTimeout: 5 * time.Second,

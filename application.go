@@ -7,9 +7,22 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-
-	"go.uber.org/zap"
 )
+
+type Logger interface {
+	Debugf(mgs string, params ...any)
+	Infof(mgs string, params ...any)
+}
+
+type fmtLogger struct{}
+
+func (l *fmtLogger) Debugf(mgs string, params ...any) {
+	fmt.Printf(mgs, params...)
+}
+
+func (l *fmtLogger) Infof(mgs string, params ...any) {
+	fmt.Printf(mgs, params...)
+}
 
 type Component interface {
 	// Synchronous startup, container runs this one by one
@@ -22,20 +35,30 @@ type Component interface {
 	Close(ctx context.Context) error
 }
 
+var defaultLogger = &fmtLogger{}
+
 type Application struct {
 	components []Component
 	timeout    time.Duration
+	logger     Logger
 }
 
 func NewApplications(components ...Component) *Application {
 	return &Application{
 		components: components,
 		timeout:    10 * time.Second,
+		logger:     defaultLogger,
 	}
 }
 
 func (app Application) WithTimeout(timeout time.Duration) Application {
 	app.timeout = timeout
+	return app
+}
+
+func (app Application) WithLogger(logger Logger) Application {
+	app.logger = logger
+
 	return app
 }
 
@@ -54,7 +77,7 @@ func (app *Application) Run() error {
 
 	for _, component := range app.components {
 		component := component
-		zap.S().Debugf("Starting component %T", component)
+		app.logger.Debugf("Starting component %T", component)
 		err := component.Startup()
 		if err != nil {
 			return fmt.Errorf("Startup error: %w", err)
@@ -70,22 +93,22 @@ func (app *Application) Run() error {
 
 	select {
 	case err := <-serverErrors:
-		zap.S().Infof("Application Error : %v", err)
+		app.logger.Infof("Application Error : %v", err)
 		// TODO add shutdown time config
 		ctx, cancel := context.WithTimeout(context.Background(), app.timeout)
 		defer cancel()
 		for _, component := range app.components {
-			zap.S().Infof("Closing component %T", component)
+			app.logger.Infof("Closing component %T", component)
 			err := component.Close(ctx)
 			if err != nil {
-				zap.S().Infof("Component %T Closed with error %s", component, err.Error())
+				app.logger.Infof("Component %T Closed with error %s", component, err.Error())
 				return err
 			}
 		}
 		return err
 
 	case sig := <-shutdown:
-		zap.S().Infof("%v : Shuting down gracefully", sig)
+		app.logger.Infof("%v : Shuting down gracefully", sig)
 		exitChan := make(chan error, 1)
 		// TODO add shutdown time config
 		ctx, cancel := context.WithTimeout(context.Background(), app.timeout)
@@ -94,10 +117,10 @@ func (app *Application) Run() error {
 		go func() {
 			var err error
 			for _, component := range app.components {
-				zap.S().Infof("Closing component %T", component)
+				app.logger.Infof("Closing component %T", component)
 				err := component.Close(ctx)
 				if err != nil {
-					zap.S().Infof("Shuting down did not complete, %v", err)
+					app.logger.Infof("Shuting down did not complete, %v", err)
 				}
 			}
 			exitChan <- err
