@@ -68,10 +68,9 @@ func (hc *HttpComponent) Run() error {
 	handler := hc.handler
 	if hc.serverConfig != nil {
 		if !hc.serverConfig.Enabled {
-			select {
-			case _ = <-hc.exitChan:
-				return nil
-			}
+			<-hc.exitChan
+			close(hc.exitChan)
+			return nil
 		}
 		if hc.serverConfig.Cors != nil {
 			corsMiddleware := cors.New(cors.Options{

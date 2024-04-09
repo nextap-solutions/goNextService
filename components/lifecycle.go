@@ -43,10 +43,9 @@ func (cc *lifecycleComponent) Run() error {
 			return err
 		}
 	} else {
-		select {
-		case _ = <-cc.exitChan:
-			return nil
-		}
+		cc.exitChan <- true
+		close(cc.exitChan)
+		return nil
 	}
 	return nil
 }

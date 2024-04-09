@@ -62,8 +62,6 @@ func (qc *queueComponent) Run() error {
 		}
 	}()
 
-	select {
-	case err := <-queueErrors:
-		return err
-	}
+	err := <-queueErrors
+	return err
 }

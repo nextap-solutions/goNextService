@@ -47,16 +47,14 @@ func (hc *healthzComponent) Startup() error {
 
 func (hc *healthzComponent) Run() error {
 	if !hc.config.Enabled {
-		select {
-		case _ = <-hc.exitChan:
-			return nil
-		}
+		<-hc.exitChan
+		return nil
 	}
 
 	healthzChecker := healthz.NewHealthChecker(hc.providers)
 	api := healthzChecker.Serve(hc.config)
 	hc.runningServer = api
 
-	zap.L().Info(fmt.Sprintf("Starting healhz %s", api.Addr))
+	zap.L().Info(fmt.Sprintf("Starting metricz %s", api.Addr))
 	return api.ListenAndServe()
 }
