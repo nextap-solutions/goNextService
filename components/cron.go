@@ -3,14 +3,14 @@ package components
 import (
 	"context"
 
-	"github.com/go-co-op/gocron"
+	"github.com/go-co-op/gocron/v2"
 )
 
 type cronComponent struct {
-	cron *gocron.Scheduler
+	cron gocron.Scheduler
 }
 
-func NewCronComponent(cron *gocron.Scheduler) *cronComponent {
+func NewCronComponent(cron gocron.Scheduler) *cronComponent {
 	return &cronComponent{
 		cron: cron,
 	}
@@ -21,11 +21,10 @@ func (cc *cronComponent) Startup() error {
 }
 
 func (cc *cronComponent) Run() error {
-	cc.cron.StartBlocking()
-	return nil
+	cc.cron.Start()
+	select {}
 }
 
 func (cc *cronComponent) Close(ctx context.Context) error {
-	cc.cron.Stop()
-	return nil
+	return cc.cron.Shutdown()
 }
